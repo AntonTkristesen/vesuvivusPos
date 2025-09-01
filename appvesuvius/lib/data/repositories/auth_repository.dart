@@ -6,13 +6,13 @@ class AuthRepository {
   AuthRepository(this._api);
 
   Future<User> login(String email, String password) async {
-    final data = await _api.post('login.php', {'email': email, 'password': password});
+    final data = await _api.post('auth/login', {'email': email, 'password': password});
     await _api.saveToken(data['token']);
     return User.fromJson(data['user']);
   }
 
   Future<User> register(String name, String email, String password) async {
-    final data = await _api.post('register.php', {'name': name, 'email': email, 'password': password});
+    final data = await _api.post('auth/register', {'name': name, 'email': email, 'password': password});
     await _api.saveToken(data['token']);
     return User.fromJson(data['user']);
   }

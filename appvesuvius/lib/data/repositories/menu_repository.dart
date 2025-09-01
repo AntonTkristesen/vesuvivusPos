@@ -6,7 +6,8 @@ class MenuRepository {
   MenuRepository(this._api);
 
   Future<List<MenuItemModel>> fetchMenu() async {
-    final data = await _api.get('menu.php');
+    final data = await _api.get('menu');
+
     final list = (data['items'] as List).map((e) => MenuItemModel.fromJson(e)).toList();
     return list;
   }
