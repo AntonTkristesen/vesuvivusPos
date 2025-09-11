@@ -147,11 +147,6 @@ class _OwnedTablesList extends StatelessWidget {
                         subtitle: Text('Ordre ID: ${order?.id} - Status: ${order?.status}'),
                         onTap: () async {
                             final o = await hv.openOrResumeTable(order?.tableNumber);
-
-                            // Update existing order in AuthViewModel instead of duplicating
-                            context.read<AuthViewModel>().updateOrder(o);
-
-                            await context.read<PosViewModel>().init(o);
                             Navigator.of(context).pushNamed(PosView.route, arguments: o);
                         },
                     );

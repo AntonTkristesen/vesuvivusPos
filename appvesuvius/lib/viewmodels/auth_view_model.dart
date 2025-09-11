@@ -71,7 +71,7 @@ class AuthViewModel extends ChangeNotifier {
         if (currentUser == null) return;
         final orders = currentUser!.orders ?? [];
         orders.removeWhere((o) => o.id == orderId);
-        currentUser = currentUser!.copyWith(orders: orders);
+        currentUser!.orders = orders;
         notifyListeners();
     }
 
