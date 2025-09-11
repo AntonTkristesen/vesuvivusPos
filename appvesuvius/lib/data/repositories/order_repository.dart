@@ -1,3 +1,5 @@
+import 'package:vesuvivus_pos/viewmodels/auth_view_model.dart';
+
 import '../api/api_client.dart';
 import '../../models/order.dart';
 import '../../models/order_item.dart';
@@ -5,20 +7,20 @@ import '../../models/order_item.dart';
 class OrderRepository {
   final ApiClient _api;
   OrderRepository(this._api);
-
-  Future<OrderModel> openOrderForTable(int tableNumber) async {
-    final data = await _api.post('orders/open', {'table_number': tableNumber});
+  AuthViewModel? _auth;
+  Future<OrderModel> openOrderForTable(int? tableNumber) async {
+    final data = await _api.post('orders/open', {'table_number': tableNumber, 'server_id': _auth?.currentUser?.id});
     return OrderModel.fromJson(data['order']);
   }
 
 
-  Future<OrderModel?> getActiveOrderForTable(int tableNumber) async {
+  Future<OrderModel?> getActiveOrderForTable(int? tableNumber) async {
     final data = await _api.get('orders/by-table', query: {'table_number': '$tableNumber'});
     if (data['order'] == null) return null;
     return OrderModel.fromJson(data['order']);
   }
 
-  Future<OrderModel> getOrder(int orderId) async {
+  Future<OrderModel> getOrder(int? orderId) async {
     final data = await _api.get('orders/$orderId');
     return OrderModel.fromJson(data['order']);
   }

@@ -18,4 +18,10 @@ class AuthRepository {
     }
 
     Future<void> logout() => _api.clearToken();
+
+    Future<User?> getCurrentUser() async {
+        final data = await _api.get('auth/me');
+        if (data['user'] == null) return null;
+        return User.fromJson(data['user']);
+    }
 }

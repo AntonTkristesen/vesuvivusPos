@@ -3,12 +3,14 @@ import '../data/repositories/menu_repository.dart';
 import '../data/repositories/order_repository.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart';
+import '../viewmodels/auth_view_model.dart';
 
 class PosViewModel extends ChangeNotifier {
     final MenuRepository _menu;
     final OrderRepository _orders;
+    final AuthViewModel authViewModel;
 
-    PosViewModel(this._menu, this._orders);
+    PosViewModel(this._menu, this._orders, this.authViewModel);
 
     List<MenuItemModel> items = [];
     OrderModel? order;
@@ -18,6 +20,7 @@ class PosViewModel extends ChangeNotifier {
 
     Future<void> init(OrderModel order) async {
         this.order = order;
+        authViewModel.updateOrder(order);
         await Future.wait([loadMenu(), refreshOrder()]);
     }
 
@@ -34,9 +37,10 @@ class PosViewModel extends ChangeNotifier {
 
     Future<void> refreshOrder() async {
         if (order == null) return;
-            loadingOrder = true; notifyListeners();
+        loadingOrder = true; notifyListeners();
         try {
             this.order = await _orders.getOrder(order!.id);
+            authViewModel.updateOrder(this.order!);
         } finally {
             loadingOrder = false; notifyListeners();
         }
@@ -59,5 +63,6 @@ class PosViewModel extends ChangeNotifier {
         if (order == null) return;
         await _orders.setOrderStatus(order!.id, 'paid');
         await refreshOrder();
+        authViewModel.updateOrder(order!);
     }
 }

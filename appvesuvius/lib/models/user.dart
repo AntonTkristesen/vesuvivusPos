@@ -1,10 +1,19 @@
+import './order.dart';
+
 class User {
   final int id;
   final String name;
   final String email;
+  List<OrderModel>? orders;
 
-  User({required this.id, required this.name, required this.email});
+  User({required this.id, required this.name, required this.email, this.orders});
 
-  factory User.fromJson(Map<String, dynamic> j) =>
-      User(id: int.parse(j['id'].toString()), name: j['name'], email: j['email']);
+  User copyWith({List<OrderModel>? orders}) {
+    return User(
+      id: id,
+      name: name,
+      email: email,
+      orders: orders ?? this.orders,
+    );
+  }
 }

@@ -64,7 +64,7 @@ class _MobileViewState extends State<_MobileView> {
                         ],
                     ),
                 ),
-                if (vm.order?.status != 'paid') // show only if not paid
+                if (vm.order?.status != 'paid')
                     Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         child: ElevatedButton.icon(
@@ -142,8 +142,10 @@ class _MenuListState extends State<_MenuList> {
                     Material(
                         color: Colors.transparent,
                         child: TabBar(
-                            isScrollable: true,
-                            tabs: (cats.isEmpty ? ['All'] : cats).map((c) => Tab(text: c)).toList(),
+                          isScrollable: true,
+                          tabs: (cats.isEmpty ? ['All'] : cats)
+                            .map((c) => Tab(text: categoryMap(c)))
+                            .toList(),
                         ),
                     ),
                     const Divider(height: 1),
@@ -183,7 +185,7 @@ class _MenuTile extends StatelessWidget {
             child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${item.category} • ${item.price.toStringAsFixed(2)}'),
+                subtitle: Text('${categoryMap(item.category)} • ${item.price.toStringAsFixed(2)}'),
                 trailing: IconButton.filled(
                     onPressed: vm.order?.status == 'paid'
                         ? null
@@ -191,7 +193,7 @@ class _MenuTile extends StatelessWidget {
                             await context.read<PosViewModel>().add(item);
                             if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('${item.name} added')),
+                                    SnackBar(content: Text('${item.name} tilføjet')),
                                 );
                             }
                         },
@@ -217,7 +219,7 @@ class _OrderPanel extends StatelessWidget {
         return Column(
             children: [
                 ListTile(
-                    title: const Text('Current order', style: TextStyle(fontWeight: FontWeight.bold)),
+                    title: const Text('Nuværende ordre', style: TextStyle(fontWeight: FontWeight.bold)),
                     subtitle: Text('Status: ${order.status}'),
                 ),
                 const Divider(height: 1),
@@ -256,5 +258,13 @@ class _OrderPanel extends StatelessWidget {
                 ),
             ],
         );
+    }
+}
+
+String categoryMap(String category) {
+    switch (category.toLowerCase()) {
+        case 'drink': return 'Drikke';
+        case 'food': return 'Mad';
+        default: return category;
     }
 }

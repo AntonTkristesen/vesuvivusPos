@@ -16,30 +16,39 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Change this to your server URL (see PHP API below)
-  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+  // const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+  const baseUrl = "http://10.0.2.2:8000/api";
+
 
   final config = AppConfig(baseUrl: baseUrl);
   final apiClient = ApiClient(config: config);
 
-  runApp(MultiProvider(
-    providers: [
-      Provider<AppConfig>.value(value: config),
-      Provider<ApiClient>.value(value: apiClient),
-      Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
-      Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
-      Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
-      ChangeNotifierProvider<AuthViewModel>(
-          create: (ctx) => AuthViewModel(ctx.read<AuthRepository>())),
-      ChangeNotifierProvider<HomeViewModel>(
-          create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
-      ChangeNotifierProvider<PosViewModel>(
-          create: (ctx) => PosViewModel(
-                ctx.read<MenuRepository>(),
-                ctx.read<OrderRepository>(),
-              )),
-    ],
-    child: const VesuvivusApp(),
-  ));
+runApp(MultiProvider(
+  providers: [
+    Provider<AppConfig>.value(value: config),
+    Provider<ApiClient>.value(value: apiClient),
+    Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
+    Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
+    Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
+    
+    // AuthViewModel must come before PosViewModel
+    ChangeNotifierProvider<AuthViewModel>(
+        create: (ctx) => AuthViewModel(ctx.read<AuthRepository>())),
+        
+    ChangeNotifierProvider<HomeViewModel>(
+        create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
+    
+    // Global PosViewModel with access to AuthViewModel
+    ChangeNotifierProvider<PosViewModel>(
+        create: (ctx) => PosViewModel(
+              ctx.read<MenuRepository>(),
+              ctx.read<OrderRepository>(),
+              ctx.read<AuthViewModel>(), // <-- safely read here
+            )),
+  ],
+  child: const VesuvivusApp(),
+));
+
 }
 
 class VesuvivusApp extends StatelessWidget {
