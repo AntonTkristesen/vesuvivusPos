@@ -51,8 +51,8 @@ class _LoginViewState extends State<LoginView> {
                     FilledButton(
                       onPressed: vm.busy ? null : () async {
                         if (!_form.currentState!.validate()) return;
-                        final ok = await vm.login(_email.text.trim(), _password.text.trim());
-                        if (ok && context.mounted) Navigator.of(context).pushReplacementNamed('/home');
+                          final ok = await vm.login(_email.text.trim(), _password.text.trim());
+                          if (ok && context.mounted) Navigator.of(context).pushReplacementNamed('/home');
                       },
                       child: vm.busy ? const SizedBox(height: 18, width: 18, child: CircularProgressIndicator(strokeWidth: 2))
                                      : const Text('Login'),

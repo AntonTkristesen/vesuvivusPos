@@ -15,13 +15,14 @@ class OrderModel {
     required this.items,
   });
 
-  factory OrderModel.fromJson(Map<String, dynamic> j) => OrderModel(
-        id: int.parse(j['id'].toString()),
-        tableNumber: int.parse(j['table_number'].toString()),
-        status: j['status'],
-        total: double.tryParse(j['total']?.toString() ?? '0') ?? 0,
-        items: (j['items'] as List? ?? [])
-            .map((x) => OrderItemModel.fromJson(x))
-            .toList(),
-      );
+factory OrderModel.fromJson(Map<String, dynamic> j) => OrderModel(
+      id: int.tryParse(j['id']?.toString() ?? '') ?? 0,
+      tableNumber: int.tryParse(j['table_number']?.toString() ?? '') ?? 0,
+      status: j['status'] ?? 'unknown',
+      total: double.tryParse(j['total']?.toString() ?? '0') ?? 0,
+      items: (j['items'] as List? ?? [])
+          .map((x) => OrderItemModel.fromJson(x as Map<String, dynamic>))
+          .toList(),
+);
+
 }

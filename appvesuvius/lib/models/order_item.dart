@@ -17,13 +17,14 @@ class OrderItemModel {
     this.notes,
   });
 
-  factory OrderItemModel.fromJson(Map<String, dynamic> j) => OrderItemModel(
-        id: int.parse(j['id'].toString()),
-        menuItemId: int.parse(j['menu_item_id'].toString()),
-        name: j['name'] ?? j['menu_name'] ?? '',
-        quantity: int.parse(j['quantity'].toString()),
-        price: double.tryParse(j['price']?.toString() ?? '0') ?? 0,
-        status: j['status'],
-        notes: j['notes'],
-      );
+factory OrderItemModel.fromJson(Map<String, dynamic> j) => OrderItemModel(
+      id: int.tryParse(j['id']?.toString() ?? '') ?? 0,
+      menuItemId: int.tryParse(j['menu_item_id']?.toString() ?? '') ?? 0,
+      name: j['name'] ?? j['menu_name'] ?? '',
+      quantity: int.tryParse(j['quantity']?.toString() ?? '') ?? 1,
+      price: double.tryParse(j['price']?.toString() ?? '0') ?? 0,
+      status: j['status'] ?? 'unknown',
+      notes: j['notes'],
+);
+
 }

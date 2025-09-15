@@ -4,65 +4,72 @@ import '../data/repositories/order_repository.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart';
 import '../viewmodels/auth_view_model.dart';
+import '../services/realtime_service.dart';
 
 class PosViewModel extends ChangeNotifier {
-    final MenuRepository _menu;
-    final OrderRepository _orders;
-    final AuthViewModel authViewModel;
+  final MenuRepository _menu;
+  final OrderRepository _orders;
+  final AuthViewModel authViewModel;
 
-    PosViewModel(this._menu, this._orders, this.authViewModel);
+  PosViewModel(this._menu, this._orders, this.authViewModel);
 
-    List<MenuItemModel> items = [];
-    OrderModel? order;
-    bool loadingMenu = false;
-    bool loadingOrder = false;
-    String? error;
+  List<MenuItemModel> items = [];
+  OrderModel? order;
+  bool loadingMenu = false;
+  String? error;
 
-    Future<void> init(OrderModel order) async {
-        this.order = order;
-        authViewModel.updateOrder(order);
-        await Future.wait([loadMenu(), refreshOrder()]);
+  Future<void> init(OrderModel order) async {
+    this.order = order;
+    authViewModel.updateOrder(order);
+    await loadMenu();
+  }
+
+  Future<void> loadMenu() async {
+    loadingMenu = true;
+    error = null;
+    notifyListeners();
+    try {
+      items = await _menu.fetchMenu();
+    } catch (e) {
+      error = e.toString();
+    } finally {
+      loadingMenu = false;
+      notifyListeners();
     }
+  }
 
-    Future<void> loadMenu() async {
-        loadingMenu = true; error = null; notifyListeners();
-        try {
-            items = await _menu.fetchMenu();
-        } catch (e) {
-            error = e.toString();
-        } finally {
-            loadingMenu = false; notifyListeners();
-        }
-    }
-
-    Future<void> refreshOrder() async {
-        if (order == null) return;
-        loadingOrder = true; notifyListeners();
-        try {
-            this.order = await _orders.getOrder(order!.id);
-            authViewModel.updateOrder(this.order!);
-        } finally {
-            loadingOrder = false; notifyListeners();
-        }
-    }
-
-    Future<void> add(MenuItemModel item) async {
-        if (order == null) return;
-        try {
-            await _orders.addItem(orderId: order!.id, menuItemId: item.id);
-            await refreshOrder();
-        } catch (e) {
-            error = e.toString();
-            notifyListeners();
-        }
-    }
-
-    double get total => order?.items.fold(0.0, (sum, it) => sum! + (it.price * it.quantity)) ?? 0.0;
-
-    Future<void> markPaid() async {
-        if (order == null) return;
-        await _orders.setOrderStatus(order!.id, 'paid');
-        await refreshOrder();
+  Future<void> bindRealtime(int userId) async {
+    RealtimeService().subscribeToUserOrders(userId, (orders) {
+      if (order != null) {
+        final updated = orders.firstWhere(
+          (o) => o.id == order!.id,
+          orElse: () => order!,
+        );
+        order = updated;
         authViewModel.updateOrder(order!);
+        notifyListeners();
+      }
+    });
+  }
+
+  Future<void> add(MenuItemModel item) async {
+    if (order == null) return;
+    try {
+      await _orders.addItem(orderId: order!.id, menuItemId: item.id);
+      // no refreshOrder(), realtime will update us
+    } catch (e) {
+      error = e.toString();
+      notifyListeners();
     }
+  }
+
+  double get total =>
+      order?.items.fold(0.0, (sum, it) => sum! + (it.price * it.quantity)) ?? 0.0;
+
+  Future<void> markPaid() async {
+    if (order == null) return;
+    await _orders.setOrderStatus(order!.id, 'paid');
+    // no refreshOrder(), realtime will update us
+    authViewModel.updateOrder(order!);
+  }
 }

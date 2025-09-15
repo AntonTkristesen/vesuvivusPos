@@ -17,7 +17,7 @@ void main() async {
 
   // Change this to your server URL (see PHP API below)
   const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
-  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING
+  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
 
 
   final config = AppConfig(baseUrl: baseUrl);

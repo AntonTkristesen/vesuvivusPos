@@ -19,11 +19,7 @@ class PosView extends StatelessWidget {
             appBar: AppBar(
                 title: Text('Bord ${routeOrder.tableNumber} • Ordre #${routeOrder.id}'),
                 actions: [
-                    IconButton(
-                        onPressed: () => context.read<PosViewModel>().refreshOrder(),
-                        icon: const Icon(Icons.refresh),
-                        tooltip: 'Opdater',
-                    )
+                  
                 ],
             ),
             body: isWide
@@ -212,7 +208,7 @@ class _OrderPanel extends StatelessWidget {
         final vm = context.watch<PosViewModel>();
         final order = vm.order;
 
-        if (vm.loadingOrder || order == null) {
+        if (order == null) {
             return const Center(child: CircularProgressIndicator());
         }
 
