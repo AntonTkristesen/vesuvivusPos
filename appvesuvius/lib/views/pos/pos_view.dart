@@ -33,6 +33,7 @@ class PosView extends StatelessWidget {
         final bool isWideScreen = _isWideScreen(context);
 
         return Scaffold(
+            resizeToAvoidBottomInset: false,
             appBar: _buildAppBar(routeOrder),
             body: isWideScreen ? _buildWideLayout() : const _MobileView(),
         );
@@ -80,12 +81,14 @@ class _MobileViewState extends State<_MobileView> {
     Widget build(BuildContext context) {
         final vm = context.watch<PosViewModel>();
 
-        return Column(
-            children: [
-                Expanded(child: _buildContent()),
-                if (_shouldShowPayButton(vm)) _buildPayButton(context, vm),
-                _buildNavigationBar(),
-            ],
+        return SafeArea(
+            child: Column(
+                children: [
+                    Expanded(child: _buildContent()),
+                    if (_shouldShowPayButton(vm)) _buildPayButton(context, vm),
+                    _buildNavigationBar(),
+                ],
+            ),
         );
     }
 
@@ -117,7 +120,7 @@ class _MobileViewState extends State<_MobileView> {
                 icon: const Icon(Icons.check_circle),
                 label: const Text(
                     _Constants.payButtonLabel,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                 ),
             ),
         );
@@ -178,7 +181,11 @@ class _MenuListState extends State<_MenuList> {
                     _buildSearchField(),
                     _buildTabBar(categoryNames),
                     const Divider(height: 1),
-                    _buildTabBarView(categoryNames, categories, vm.items),
+                    Expanded(
+                        child: vm.error != null
+                            ? Center(child: Text('Fejl: ${vm.error}'))
+                            : _buildTabBarView(categoryNames, categories, vm.items),
+                    ),
                 ],
             ),
         );
