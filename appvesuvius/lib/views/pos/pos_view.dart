@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/order.dart';
 import '../../models/menu_item.dart';
 import '../../viewmodels/pos_view_model.dart';
+import '../../viewmodels/auth_view_model.dart';
 
 class PosView extends StatelessWidget {
     static const route = '/pos';
@@ -12,7 +13,7 @@ class PosView extends StatelessWidget {
     Widget build(BuildContext context) {
         final OrderModel routeOrder = (ModalRoute.of(context)?.settings.arguments) as OrderModel? ??
             context.watch<PosViewModel>().order!;
-        final vm = context.watch<PosViewModel>();
+
         final isWide = MediaQuery.of(context).size.width > 600;
 
         return Scaffold(
@@ -206,7 +207,9 @@ class _OrderPanel extends StatelessWidget {
     @override
     Widget build(BuildContext context) {
         final vm = context.watch<PosViewModel>();
-        final order = vm.order;
+        final orderId = vm.order?.id;
+        final auth = context.watch<AuthViewModel>();
+        final order = auth.currentUser?.orders?.firstWhere((o) => o.id == orderId, orElse: () => vm.order!);
 
         if (order == null) {
             return const Center(child: CircularProgressIndicator());

@@ -4,7 +4,6 @@ import '../data/repositories/order_repository.dart';
 import '../models/menu_item.dart';
 import '../models/order.dart';
 import '../viewmodels/auth_view_model.dart';
-import '../services/realtime_service.dart';
 
 class PosViewModel extends ChangeNotifier {
     final MenuRepository _menu;
@@ -22,11 +21,6 @@ class PosViewModel extends ChangeNotifier {
         this.order = order;
         authViewModel.updateOrder(order);
         await loadMenu();
-
-        final userId = authViewModel.userId;
-        if (userId != null) {
-            await bindRealtime(userId);
-        }
     }
 
     Future<void> loadMenu() async {
@@ -41,21 +35,6 @@ class PosViewModel extends ChangeNotifier {
             loadingMenu = false;
             notifyListeners();
         }
-    }
-
-    Future<void> bindRealtime(int userId) async {
-        RealtimeService().subscribeToUserOrders(userId, (orders) {
-            if (order == null) return;
-
-            final updated = orders.where((o) => o.id == order!.id).toList();
-            if (updated.isNotEmpty) {
-                authViewModel.updateOrder(updated.first);
-
-                order = updated.first;
-
-                notifyListeners();
-            }
-        });
     }
 
     Future<void> add(MenuItemModel item) async {
