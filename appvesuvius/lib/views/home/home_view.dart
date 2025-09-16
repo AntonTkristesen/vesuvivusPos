@@ -6,6 +6,25 @@ import '../pos/pos_view.dart';
 import '../../viewmodels/auth_view_model.dart';
 import '../../services/realtime_service.dart';
 
+class _Constants {
+    static const double defaultPadding = 16.0;
+    static const double spacingSmall = 8.0;
+    static const double spacingMedium = 12.0;
+    static const double spacingLarge = 24.0;
+    static const EdgeInsets cardPadding = EdgeInsets.all(16.0);
+
+    static const String appTitle = 'Vesuvivus — Bord';
+    static const String logoutTooltip = 'Log ud';
+    static const String tableNumberLabel = 'Bordnummer';
+    static const String openContinueLabel = 'Åbn / Fortsæt';
+    static const String invalidTableMessage = 'Indtast et gyldigt bordnummer';
+    static const String helpText = 'Indtast et bordnummer and press "Åbn / Fortsæt". På næste skærm kan du tilføje menupunkter og markere ordren som betalt.';
+    static const String orderIdLabel = 'Ordre ID: ';
+    static const String statusLabel = ' - Status: ';
+    static const String tableLabel = 'Bord ';
+    static const String errorOpeningOrder = 'Fejl: ';
+}
+
 class HomeView extends StatefulWidget {
     const HomeView({super.key});
 
@@ -14,11 +33,22 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-    final _tableCtrl = TextEditingController();
+    final _tableController = TextEditingController();
 
     @override
     void initState() {
         super.initState();
+        _initializeRealtimeConnection();
+    }
+
+    @override
+    void dispose() {
+        _tableController.dispose();
+        RealtimeService().disconnect();
+        super.dispose();
+    }
+
+    void _initializeRealtimeConnection() {
         final auth = context.read<AuthViewModel>();
         if (auth.isAuthenticated) {
             auth.initializeRealtimeForCurrentUser();
@@ -26,98 +56,129 @@ class _HomeViewState extends State<HomeView> {
     }
 
     @override
-    void dispose() {
-        RealtimeService().disconnect();
-        super.dispose();
-    }
-
-    @override
     Widget build(BuildContext context) {
-        final hv = context.watch<HomeViewModel>();
-        final auth = context.watch<AuthViewModel>();
+        final homeViewModel = context.watch<HomeViewModel>();
+        final authViewModel = context.watch<AuthViewModel>();
 
         return Scaffold(
-            appBar: AppBar(
-                title: const Text('Vesuvivus POS — Bord'),
-                actions: [
-                    IconButton(
-                        onPressed: () async {
-                            await auth.logout();
-                            if (mounted) Navigator.of(context).pushReplacementNamed('/login');
-                        },
-                        icon: const Icon(Icons.logout),
-                        tooltip: 'Log ud',
-                    )
+            appBar: _buildAppBar(authViewModel),
+            body: _buildBody(homeViewModel, authViewModel),
+        );
+    }
+
+    AppBar _buildAppBar(AuthViewModel authViewModel) {
+        return AppBar(
+            title: const Text(_Constants.appTitle),
+            actions: [
+                IconButton(
+                    onPressed: () => _handleLogout(authViewModel),
+                    icon: const Icon(Icons.logout),
+                    tooltip: _Constants.logoutTooltip,
+                ),
+            ],
+        );
+    }
+
+    Widget _buildBody(HomeViewModel homeViewModel, AuthViewModel authViewModel) {
+        return Padding(
+            padding: const EdgeInsets.all(_Constants.defaultPadding),
+            child: Column(
+                children: [
+                    _buildTableSelectionRow(homeViewModel, authViewModel),
+                    if (homeViewModel.busy) _buildProgressIndicator(),
+                    if (homeViewModel.error != null) _buildErrorMessage(homeViewModel.error!),
+                    const SizedBox(height: _Constants.spacingMedium),
+                    const _HelpCard(),
+                    const SizedBox(height: _Constants.spacingMedium),
+                    const _OwnedTablesList(),
                 ],
             ),
-            body: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                children: [
-                    Row(
-                        children: [
-                            Expanded(
-                                child: TextField(
-                                    controller: _tableCtrl,
-                                    keyboardType: TextInputType.number,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Bordnummer',
-                                        border: OutlineInputBorder(),
-                                    ),
-                                ),
-                            ),
-                            const SizedBox(width: 12),
-                            FilledButton.icon(
-                                onPressed: hv.busy
-                                    ? null
-                                    : () async {
-                                        final t = int.tryParse(_tableCtrl.text.trim());
-                                        if (t == null) {
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                                const SnackBar(content: Text('Indtast et gyldigt bordnummer'))
-                                            );
-                                            return;
-                                        }
-                            
-                                        try {
-                                            final order = await hv.openOrResumeTable(t);
-                                            if (!mounted) return;
+        );
+    }
 
-                                            if (!auth.hasOrder(order.id)) {
-                                                auth.addOrder(order);
-                                            }
+    Widget _buildTableSelectionRow(HomeViewModel homeViewModel, AuthViewModel authViewModel) {
+        return Row(
+            children: [
+                Expanded(child: _buildTableNumberField()),
+                const SizedBox(width: _Constants.spacingMedium),
+                _buildOpenTableButton(homeViewModel, authViewModel),
+            ],
+        );
+    }
 
-                                            await context.read<PosViewModel>().init(order);
-                                            await Navigator.of(context).pushNamed(PosView.route, arguments: order);
-                                        } catch (e) {
-                                            if (!mounted) return;
-                                                ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text('$e'))
-                                            );
-                                        }
-                                    },
-                                icon: const Icon(Icons.table_bar),
-                                label: const Text('Åbn / Fortsæt'),
-                            )
-                        ],
-                    ),
-                    if (hv.busy)
-                        const Padding(
-                            padding: EdgeInsets.only(top: 24),
-                            child: LinearProgressIndicator()
-                        ),
-                    if (hv.error != null)
-                        Padding(
-                            padding: const EdgeInsets.only(top: 8),
-                            child: Text(hv.error!, style: const TextStyle(color: Colors.red)),
-                        ),
-                        const SizedBox(height: 12),
-                        const _HelpCard(),
-                        const SizedBox(height: 12),
-                        const _OwnedTablesList(),
-                    ],
-                ),
+    Widget _buildTableNumberField() {
+        return TextField(
+            controller: _tableController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+                labelText: _Constants.tableNumberLabel,
+                border: OutlineInputBorder(),
             ),
+        );
+    }
+
+    Widget _buildOpenTableButton(HomeViewModel homeViewModel, AuthViewModel authViewModel) {
+        return FilledButton.icon(
+            onPressed: homeViewModel.busy ? null : () => _handleOpenTable(homeViewModel, authViewModel),
+            icon: const Icon(Icons.table_bar),
+            label: const Text(_Constants.openContinueLabel),
+        );
+    }
+
+    Widget _buildProgressIndicator() {
+        return const Padding(
+            padding: EdgeInsets.only(top: _Constants.spacingLarge),
+            child: LinearProgressIndicator(),
+        );
+    }
+
+    Widget _buildErrorMessage(String error) {
+        return Padding(
+            padding: const EdgeInsets.only(top: _Constants.spacingSmall),
+            child: Text(
+                error,
+                style: const TextStyle(color: Colors.red),
+            ),
+        );
+    }
+
+    Future<void> _handleLogout(AuthViewModel authViewModel) async {
+        await authViewModel.logout();
+        if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/login');
+        }
+    }
+
+    Future<void> _handleOpenTable(HomeViewModel homeViewModel, AuthViewModel authViewModel) async {
+        final tableNumber = _parseTableNumber();
+        if (tableNumber == null) {
+            _showErrorSnackBar(_Constants.invalidTableMessage);
+            return;
+        }
+
+        try {
+            final order = await homeViewModel.openOrResumeTable(tableNumber);
+            if (!mounted) return;
+
+            if (!authViewModel.hasOrder(order.id)) {
+                authViewModel.addOrder(order);
+            }
+
+            await context.read<PosViewModel>().init(order);
+            await Navigator.of(context).pushNamed(PosView.route, arguments: order);
+        } catch (e) {
+            if (!mounted) return;
+            _showErrorSnackBar('$e');
+        }
+    }
+
+    int? _parseTableNumber() {
+        return int.tryParse(_tableController.text.trim());
+    }
+
+    void _showErrorSnackBar(String message) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(message)),
         );
     }
 }
@@ -129,15 +190,13 @@ class _HelpCard extends StatelessWidget {
     Widget build(BuildContext context) {
         return Card(
             child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: _Constants.cardPadding,
                 child: Row(
                     children: const [
                         Icon(Icons.info_outline),
-                        SizedBox(width: 12),
+                        SizedBox(width: _Constants.spacingMedium),
                         Expanded(
-                            child: Text(
-                                'Indtast et bordnummer and press "Åbn / Fortsæt". På næste skærm kan du tilføje menupunkter og markere ordren som betalt.'
-                            ),
+                            child: Text(_Constants.helpText),
                         ),
                     ],
                 ),
@@ -151,34 +210,83 @@ class _OwnedTablesList extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
-        final auth = context.watch<AuthViewModel>();
-        final orders = auth.currentUser?.orders ?? [];
+        final authViewModel = context.watch<AuthViewModel>();
+        final orders = authViewModel.currentUser?.orders ?? [];
+
+        if (orders.isEmpty) {
+            return const Expanded(
+                child: Center(
+                    child: Text(
+                        'Ingen aktive ordrer',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey,
+                        ),
+                    ),
+                ),
+            );
+        }
 
         return Expanded(
             child: ListView.builder(
                 itemCount: orders.length,
-                itemBuilder: (context, index) {
-                    final order = orders[index];
-                    return ListTile(
-                        title: Text('Bord ${order.tableNumber}'),
-                        subtitle: Text('Ordre ID: ${order.id} - Status: ${order.status}'),
-                        onTap: () async {
-                            try {
-                                final hv = context.read<HomeViewModel>();
-                                final o = await hv.openOrResumeTable(order.tableNumber);
-                                if (!context.mounted) return;
-                                await context.read<PosViewModel>().init(o);
-                                await Navigator.of(context).pushNamed(PosView.route, arguments: o);
-                            } catch (e) {
-                                if (!context.mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error opening order: $e'))
-                                );
-                            }
-                        },
-                    );
-                },
+                itemBuilder: (context, index) => _OrderTile(order: orders[index]),
             ),
         );
+    }
+}
+
+class _OrderTile extends StatelessWidget {
+    final dynamic order;
+    
+    const _OrderTile({required this.order});
+
+    @override
+    Widget build(BuildContext context) {
+        return ListTile(
+            title: Text('${_Constants.tableLabel}${order.tableNumber}'),
+            subtitle: Text('${_Constants.orderIdLabel}${order.id}${_Constants.statusLabel}${order.status}'),
+            onTap: () => _handleOrderTap(context),
+            trailing: _buildStatusIcon(),
+        );
+    }
+
+    Widget _buildStatusIcon() {
+        IconData iconData;
+        Color iconColor;
+        
+        switch (order.status.toString().toLowerCase()) {
+            case 'paid':
+                iconData = Icons.check_circle;
+                iconColor = Colors.green;
+                break;
+            case 'pending':
+                iconData = Icons.pending;
+                iconColor = Colors.orange;
+                break;
+            default:
+                iconData = Icons.restaurant;
+                iconColor = Colors.blue;
+                break;
+        }
+        
+        return Icon(iconData, color: iconColor);
+    }
+
+    Future<void> _handleOrderTap(BuildContext context) async {
+        try {
+            final homeViewModel = context.read<HomeViewModel>();
+            final reopenedOrder = await homeViewModel.openOrResumeTable(order.tableNumber);
+            
+            if (!context.mounted) return;
+            
+            await context.read<PosViewModel>().init(reopenedOrder);
+            await Navigator.of(context).pushNamed(PosView.route, arguments: reopenedOrder);
+        } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${_Constants.errorOpeningOrder}$e')),
+            );
+        }
     }
 }
