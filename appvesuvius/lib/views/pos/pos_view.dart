@@ -138,10 +138,10 @@ class _MenuListState extends State<_MenuList> {
                     Material(
                         color: Colors.transparent,
                         child: TabBar(
-                          isScrollable: true,
-                          tabs: (cats.isEmpty ? ['All'] : cats)
-                            .map((c) => Tab(text: categoryMap(c)))
-                            .toList(),
+                            isScrollable: true,
+                            tabs: (cats.isEmpty ? ['All'] : cats)
+                                .map((c) => Tab(text: categoryMap(c)))
+                                .toList(),
                         ),
                     ),
                     const Divider(height: 1),
