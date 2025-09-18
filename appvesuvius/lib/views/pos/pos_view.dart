@@ -176,29 +176,35 @@ class _MenuTile extends StatelessWidget {
     @override
     Widget build(BuildContext context) {
         final vm = context.watch<PosViewModel>();
+        final isDisabled = vm.order?.status == 'paid';
+
         return Card(
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-                subtitle: Text('${categoryMap(item.category)} • ${item.price.toStringAsFixed(2)}'),
-                trailing: IconButton.filled(
-                    onPressed: vm.order?.status == 'paid'
-                        ? null
-                        : () async {
-                            await context.read<PosViewModel>().add(item);
-                            if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('${item.name} tilføjet')),
-                                );
-                            }
-                        },
-                    icon: const Icon(Icons.add),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: isDisabled
+                    ? null
+                    : () async {
+                        await context.read<PosViewModel>().add(item);
+                        if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('${item.name} tilføjet')),
+                            );
+                        }
+                    },
+                child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    title: Text(item.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    subtitle: Text('${categoryMap(item.category)} • ${item.price.toStringAsFixed(2)}'),
+                    enabled: !isDisabled,
                 ),
             ),
         );
     }
 }
+
+
 
 class _OrderPanel extends StatelessWidget {
     const _OrderPanel();
