@@ -19,8 +19,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Change this to your server URL (see PHP API below)
-  //const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
-  const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
+  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
 
 
   final config = AppConfig(baseUrl: baseUrl);
@@ -37,8 +37,7 @@ runApp(MultiProvider(
     
     // AuthViewModel must come before PosViewModel
     ChangeNotifierProvider<AuthViewModel>(
-        create: (ctx) => AuthViewModel(ctx.read<AuthRepository>())),
-        
+        create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
     ChangeNotifierProvider<HomeViewModel>(
         create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
 

@@ -95,7 +95,7 @@ class _HomeViewState extends State<HomeView> {
                     const SizedBox(height: _Constants.spacingMedium),
                     const _HelpCard(),
                     const SizedBox(height: _Constants.spacingMedium),
-                    const _OwnedTablesList(),
+                    _OwnedTablesList(),
                 ],
             ),
         );
@@ -217,8 +217,6 @@ class _HelpCard extends StatelessWidget {
 }
 
 class _OwnedTablesList extends StatelessWidget {
-    const _OwnedTablesList();
-
     @override
     Widget build(BuildContext context) {
         final authViewModel = context.watch<AuthViewModel>();
@@ -258,7 +256,17 @@ class _OrderTile extends StatelessWidget {
             title: Text('${_Constants.tableLabel}${order.tableNumber}'),
             subtitle: Text('${_Constants.orderIdLabel}${order.id}${_Constants.statusLabel}${order.status}'),
             onTap: () => _handleOrderTap(context),
-            trailing: _buildStatusIcon(),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildStatusIcon(),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () => _handleDeleteOrder(context),
+                  tooltip: 'Slet ordre',
+                ),
+              ],
+            ),
         );
     }
 
@@ -293,6 +301,18 @@ class _OrderTile extends StatelessWidget {
             
             await context.read<PosViewModel>().init(reopenedOrder);
             await Navigator.of(context).pushNamed(PosView.route, arguments: reopenedOrder);
+        } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${_Constants.errorOpeningOrder}$e')),
+            );
+        }
+    }
+
+    Future<void> _handleDeleteOrder(BuildContext context) async {
+        try {
+            final authViewModel = context.read<AuthViewModel>();
+            authViewModel.removeOrder(order.id);
         } catch (e) {
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(

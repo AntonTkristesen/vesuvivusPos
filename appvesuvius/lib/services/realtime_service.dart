@@ -53,6 +53,20 @@ class RealtimeService {
                         if (kDebugMode) print('Error parsing orders: $err');
                     }
                 }
+
+                if (e.eventName == 'OrderDeleted' && e.data != null) {
+                    try {
+                        final dataMap = json.decode(e.data.toString()) as Map<String, dynamic>;
+                        if (kDebugMode) print('Decoded JSON for deletion: $dataMap');
+
+                        final orders = (dataMap['orders'] as List? ?? [])
+                            .map((x) => OrderModel.fromJson(x as Map<String, dynamic>))
+                            .toList();
+                        callback(orders);
+                    } catch (err) {
+                        if (kDebugMode) print('Error parsing deleted orders: $err');
+                    }
+                }
             },
         );
 
