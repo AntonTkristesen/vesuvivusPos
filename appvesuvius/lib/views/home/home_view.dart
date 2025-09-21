@@ -75,6 +75,11 @@ class _HomeViewState extends State<HomeView> {
                     icon: const Icon(Icons.logout),
                     tooltip: _Constants.logoutTooltip,
                 ),
+                 IconButton(
+                    onPressed: () => _navigateToReceipts(),
+                    icon: const Icon(Icons.request_quote_rounded),
+                    tooltip: _Constants.logoutTooltip,
+                ),
             ],
         );
     }
@@ -147,6 +152,12 @@ class _HomeViewState extends State<HomeView> {
         if (mounted) {
             Navigator.of(context).pushReplacementNamed('/login');
         }
+    }
+
+    Future<void> _navigateToReceipts() async {
+        if (mounted) {
+            Navigator.of(context).pushReplacementNamed('/receipts');
+          }
     }
 
     Future<void> _handleOpenTable(HomeViewModel homeViewModel, AuthViewModel authViewModel) async {

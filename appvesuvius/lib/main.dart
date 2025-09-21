@@ -7,17 +7,20 @@ import 'data/repositories/menu_repository.dart';
 import 'data/repositories/order_repository.dart';
 import 'viewmodels/auth_view_model.dart';
 import 'viewmodels/home_view_model.dart';
+import 'viewmodels/receipt_view_model.dart';
 import 'viewmodels/pos_view_model.dart';
 import 'views/auth/login_view.dart';
 import 'views/home/home_view.dart';
 import 'views/pos/pos_view.dart';
+import 'views/receipt/receipt_view.dart';
+import 'data/repositories/receipt_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Change this to your server URL (see PHP API below)
-  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
-  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
+  //const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+  const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
 
 
   final config = AppConfig(baseUrl: baseUrl);
@@ -30,6 +33,7 @@ runApp(MultiProvider(
     Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
     Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
     Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
+    Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
     
     // AuthViewModel must come before PosViewModel
     ChangeNotifierProvider<AuthViewModel>(
@@ -37,6 +41,10 @@ runApp(MultiProvider(
         
     ChangeNotifierProvider<HomeViewModel>(
         create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
+
+    ChangeNotifierProvider<ReceiptViewModel>(
+        create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
+      ),
     
     // Global PosViewModel with access to AuthViewModel
     ChangeNotifierProvider<PosViewModel>(
@@ -67,6 +75,7 @@ class VesuvivusApp extends StatelessWidget {
       routes: {
         '/login': (_) => const LoginView(),
         '/home': (_) => const HomeView(),
+        '/receipts': (_) => const ReceiptView(),
         PosView.route: (_) => const PosView(),
       },
     );

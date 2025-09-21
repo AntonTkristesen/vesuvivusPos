@@ -58,7 +58,6 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     Future<void> logout() async {
-        RealtimeService().disconnect();
         await _repo.logout();
         currentUser = null;
         notifyListeners();
