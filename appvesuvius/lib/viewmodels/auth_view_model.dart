@@ -1,13 +1,15 @@
 import 'package:flutter/foundation.dart';
 import '../data/repositories/auth_repository.dart';
+import '../data/repositories/order_repository.dart';
 import '../models/user.dart';
 import '../models/order.dart';
 import '../services/realtime_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
     final AuthRepository _repo;
+    final OrderRepository _orderRepo;
 
-    AuthViewModel(this._repo);
+    AuthViewModel(this._repo, this._orderRepo);
 
     User? currentUser;
     bool busy = false;
@@ -135,8 +137,9 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     void removeOrder(int orderId) {
+        currentUser?.orders?.removeWhere((o) => o.id == orderId);
         if (currentUser?.orders != null) {
-            currentUser!.orders!.removeWhere((order) => order.id == orderId);
+            _orderRepo.removeOrder(orderId);
             notifyListeners();
         }
     }

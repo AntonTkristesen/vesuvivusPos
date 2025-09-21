@@ -39,4 +39,8 @@ class OrderRepository {
     Future<void> setOrderStatus(int orderId, String status) async {
         await _api.post('orders/status', {'order_id': orderId, 'status': status});
     }
+
+    Future<void> removeOrder(int orderId) async {
+        await _api.delete('orders/$orderId');
+    }
 }

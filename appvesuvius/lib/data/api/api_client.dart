@@ -56,6 +56,16 @@ class ApiClient {
         return _handle(res);
     }
 
+    Future<dynamic> delete(String path) async {
+        print(_uri(path));
+        final token = await getToken();
+        final res = await _client.delete(_uri(path), headers: {
+            'Accept': 'application/json',
+            if (token != null) 'Authorization': 'Bearer $token',
+        });
+        return _handle(res);
+    }
+
     dynamic _handle(http.Response r) {
         final status = r.statusCode;
         final data = (r.body.isEmpty) ? {} : jsonDecode(r.body);
