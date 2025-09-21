@@ -14,48 +14,57 @@ import 'views/home/home_view.dart';
 import 'views/pos/pos_view.dart';
 import 'views/receipt/receipt_view.dart';
 import 'data/repositories/receipt_repository.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Change this to your server URL (see PHP API below)
-  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
-  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
+    // Change this to your server URL (see PHP API below)
+    // const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+    const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
 
+    final config = AppConfig(baseUrl: baseUrl);
+    final apiClient = ApiClient(config: config);
 
-  final config = AppConfig(baseUrl: baseUrl);
-  final apiClient = ApiClient(config: config);
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
-runApp(MultiProvider(
-  providers: [
-    Provider<AppConfig>.value(value: config),
-    Provider<ApiClient>.value(value: apiClient),
-    Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
-    Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
-    Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
-    Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
-    
-    // AuthViewModel must come before PosViewModel
-    ChangeNotifierProvider<AuthViewModel>(
-        create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
-    ChangeNotifierProvider<HomeViewModel>(
-        create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
+    final InitializationSettings initializationSettings = InitializationSettings(
+        android: initializationSettingsAndroid,
+    );
 
-    ChangeNotifierProvider<ReceiptViewModel>(
-        create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
-      ),
-    
-    // Global PosViewModel with access to AuthViewModel
-    ChangeNotifierProvider<PosViewModel>(
-        create: (ctx) => PosViewModel(
-              ctx.read<MenuRepository>(),
-              ctx.read<OrderRepository>(),
-              ctx.read<AuthViewModel>(), // <-- safely read here
-            )),
-  ],
-  child: const VesuvivusApp(),
-));
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    runApp(MultiProvider(
+        providers: [
+            Provider<AppConfig>.value(value: config),
+            Provider<ApiClient>.value(value: apiClient),
+            Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
+            Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
+            Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
+            Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
+            
+            // AuthViewModel must come before PosViewModel
+            ChangeNotifierProvider<AuthViewModel>(
+                create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
+            ChangeNotifierProvider<HomeViewModel>(
+                create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
 
+            ChangeNotifierProvider<ReceiptViewModel>(
+                create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
+            ),
+            
+            // Global PosViewModel with access to AuthViewModel
+            ChangeNotifierProvider<PosViewModel>(
+                create: (ctx) => PosViewModel(
+                    ctx.read<MenuRepository>(),
+                    ctx.read<OrderRepository>(),
+                    ctx.read<AuthViewModel>(), // <-- safely read here
+                    )),
+        ],
+        child: const VesuvivusApp(),
+    ));
 }
 
 class VesuvivusApp extends StatelessWidget {
