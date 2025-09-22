@@ -20,7 +20,6 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async {
     WidgetsFlutterBinding.ensureInitialized();
-    //api key: os_v2_app_x3vmquzoungwxk4u7tyggxa4yhyrdyahiccew6e2chu2cq6wijhy2h7ilpsgabonsjxwwts6v6h376q2woe25aleoxyfhxewowotpha
     // Change this to your server URL (see PHP API below)
     const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
     // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
@@ -33,7 +32,7 @@ void main() async {
     );
 
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-    OneSignal.initialize("beeac853-2ea3-4d6b-ab94-fcf0635c1cc1");
+    OneSignal.initialize(const String.fromEnvironment('ONESIGNAL_APP_ID'));
     OneSignal.Notifications.requestPermission(true);
     
     runApp(MultiProvider(
