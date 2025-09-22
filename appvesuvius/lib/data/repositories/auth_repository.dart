@@ -2,13 +2,16 @@ import '../api/api_client.dart';
 import '../../models/user.dart';
 import '../../services/realtime_service.dart';
 import 'package:flutter/material.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class AuthRepository {
     final ApiClient _api;
     AuthRepository(this._api);
 
     Future<User> login(String email, String password) async {
-        final data = await _api.post('auth/login', {'email': email, 'password': password});
+        var oneSignalUser = await OneSignal.User;
+        var onesignalId = await oneSignalUser.getOnesignalId();
+        final data = await _api.post('auth/login', {'email': email, 'password': password, 'onesignal_id': onesignalId});
         await _api.saveToken(data['token']);
         final user = User.fromJson(data['user']);
         await RealtimeService().init();
@@ -16,10 +19,11 @@ class AuthRepository {
         return user;
     }
 
-
     Future<User> register(String name, String email, String password) async {
         try {
-            final data = await _api.post('auth/register', {'name': name, 'email': email, 'password': password});
+            var oneSignalUser = await OneSignal.User;
+            var onesignalId = await oneSignalUser.getOnesignalId();
+            final data = await _api.post('auth/register', {'name': name, 'email': email, 'password': password, 'onesignal_id': onesignalId});
             await _api.saveToken(data['token']);
             final user = User.fromJson(data['user']);
             await RealtimeService().init();

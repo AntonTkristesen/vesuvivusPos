@@ -5,6 +5,7 @@ import '../../viewmodels/pos_view_model.dart';
 import '../pos/pos_view.dart';
 import '../../viewmodels/auth_view_model.dart';
 import '../../services/realtime_service.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 class _Constants {
     static const double defaultPadding = 16.0;

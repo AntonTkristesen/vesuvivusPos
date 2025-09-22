@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import '../models/order.dart';
-import 'notifications.dart';
 
 class RealtimeService {
     static final RealtimeService _instance = RealtimeService._internal();
@@ -67,16 +66,6 @@ class RealtimeService {
                     } catch (err) {
                         if (kDebugMode) print('Error parsing deleted orders: $err');
                     }
-                }
-
-                if (e.eventName == 'OrderReady' && e.data != null) {
-                  try {
-                      final dataMap = json.decode(e.data.toString()) as Map<String, dynamic>;
-                      final tableNumber = int.tryParse(dataMap['table_number']?.toString() ?? '') ?? 0;
-                      showOrderReadyNotification(tableNumber);
-                  } catch (err) {
-                      if (kDebugMode) print('Error parsing ready orders: $err');
-                  }
                 }
             },
         );

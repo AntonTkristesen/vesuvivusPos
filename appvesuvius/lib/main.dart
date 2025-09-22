@@ -14,13 +14,13 @@ import 'views/home/home_view.dart';
 import 'views/pos/pos_view.dart';
 import 'views/receipt/receipt_view.dart';
 import 'data/repositories/receipt_repository.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async {
     WidgetsFlutterBinding.ensureInitialized();
-
+    //api key: os_v2_app_x3vmquzoungwxk4u7tyggxa4yhyrdyahiccew6e2chu2cq6wijhy2h7ilpsgabonsjxwwts6v6h376q2woe25aleoxyfhxewowotpha
     // Change this to your server URL (see PHP API below)
     // const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
     const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
@@ -28,14 +28,14 @@ void main() async {
     final config = AppConfig(baseUrl: baseUrl);
     final apiClient = ApiClient(config: config);
 
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-
-    final InitializationSettings initializationSettings = InitializationSettings(
-        android: initializationSettingsAndroid,
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+    OneSignal.initialize("beeac853-2ea3-4d6b-ab94-fcf0635c1cc1");
+    OneSignal.Notifications.requestPermission(true);
+    
     runApp(MultiProvider(
         providers: [
             Provider<AppConfig>.value(value: config),
