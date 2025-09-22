@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "13045535088",
+    "project_id": "vesuvius-f8dee",
+    "storage_bucket": "vesuvius-f8dee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13045535088:android:279abc90d22bbe7e463fb5",
+        "android_client_info": {
+          "package_name": "com.example.appvesuvius"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9PIn9rPej8l0KDWdzBZr1jIvXy0w7zuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:13045535088:android:379b0f1f75749166463fb5",
+        "android_client_info": {
+          "package_name": "com.vesuvius"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9PIn9rPej8l0KDWdzBZr1jIvXy0w7zuk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

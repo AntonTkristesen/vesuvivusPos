@@ -14,48 +14,56 @@ import 'views/home/home_view.dart';
 import 'views/pos/pos_view.dart';
 import 'views/receipt/receipt_view.dart';
 import 'data/repositories/receipt_repository.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+    WidgetsFlutterBinding.ensureInitialized();
+    // Change this to your server URL (see PHP API below)
+    const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
+    // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
 
-  // Change this to your server URL (see PHP API below)
-  const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
-  // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
+    final config = AppConfig(baseUrl: baseUrl);
+    final apiClient = ApiClient(config: config);
 
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
 
-  final config = AppConfig(baseUrl: baseUrl);
-  final apiClient = ApiClient(config: config);
-
-runApp(MultiProvider(
-  providers: [
-    Provider<AppConfig>.value(value: config),
-    Provider<ApiClient>.value(value: apiClient),
-    Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
-    Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
-    Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
-    Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
+    OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+    OneSignal.initialize(const String.fromEnvironment('ONESIGNAL_APP_ID'));
+    OneSignal.Notifications.requestPermission(true);
     
-    // AuthViewModel must come before PosViewModel
-    ChangeNotifierProvider<AuthViewModel>(
-        create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
-    ChangeNotifierProvider<HomeViewModel>(
-        create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
+    runApp(MultiProvider(
+        providers: [
+            Provider<AppConfig>.value(value: config),
+            Provider<ApiClient>.value(value: apiClient),
+            Provider<AuthRepository>(create: (_) => AuthRepository(apiClient)),
+            Provider<MenuRepository>(create: (_) => MenuRepository(apiClient)),
+            Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
+            Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
+            
+            // AuthViewModel must come before PosViewModel
+            ChangeNotifierProvider<AuthViewModel>(
+                create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
+            ChangeNotifierProvider<HomeViewModel>(
+                create: (ctx) => HomeViewModel(ctx.read<OrderRepository>())),
 
-    ChangeNotifierProvider<ReceiptViewModel>(
-        create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
-      ),
-    
-    // Global PosViewModel with access to AuthViewModel
-    ChangeNotifierProvider<PosViewModel>(
-        create: (ctx) => PosViewModel(
-              ctx.read<MenuRepository>(),
-              ctx.read<OrderRepository>(),
-              ctx.read<AuthViewModel>(), // <-- safely read here
-            )),
-  ],
-  child: const VesuvivusApp(),
-));
-
+            ChangeNotifierProvider<ReceiptViewModel>(
+                create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
+            ),
+            
+            // Global PosViewModel with access to AuthViewModel
+            ChangeNotifierProvider<PosViewModel>(
+                create: (ctx) => PosViewModel(
+                    ctx.read<MenuRepository>(),
+                    ctx.read<OrderRepository>(),
+                    ctx.read<AuthViewModel>(), // <-- safely read here
+                    )),
+        ],
+        child: const VesuvivusApp(),
+    ));
 }
 
 class VesuvivusApp extends StatelessWidget {
