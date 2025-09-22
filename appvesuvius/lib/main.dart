@@ -32,7 +32,7 @@ void main() async {
     );
 
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-    OneSignal.initialize(const String.fromEnvironment('ONESIGNAL_APP_ID'));
+    OneSignal.initialize("beeac853-2ea3-4d6b-ab94-fcf0635c1cc1");
     OneSignal.Notifications.requestPermission(true);
     
     runApp(MultiProvider(
