@@ -143,6 +143,16 @@ class AuthViewModel extends ChangeNotifier {
         }
     }
 
+    Future<void> markOrderAsServed(int orderId) async {
+        try {
+            await _orderRepo.setOrderStatus(orderId, 'served');
+        } catch (e) {
+            if (kDebugMode) {
+                print('Error marking order as served: $e');
+            }
+        }
+    }
+
     int? get userId => currentUser?.id;
 
     bool get isAuthenticated => currentUser != null;

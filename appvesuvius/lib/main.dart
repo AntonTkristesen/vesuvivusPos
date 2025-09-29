@@ -72,7 +72,7 @@ class VesuvivusApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Vesuvivus POS',
+      title: 'Vesuvivus',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorSchemeSeed: Colors.deepOrange,
