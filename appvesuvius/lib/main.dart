@@ -17,9 +17,11 @@ import 'data/repositories/receipt_repository.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
     WidgetsFlutterBinding.ensureInitialized();
+    await dotenv.load(fileName: ".env");
     // Change this to your server URL (see PHP API below)
     const baseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: 'https://cafe.csstrats.dk/api');
     // const baseUrl = "http://10.0.2.2:8000/api"; // DEBUGGING: Android emulator localhost
@@ -31,8 +33,9 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
+    final String oneSignalAppId = dotenv.env['ONESIGNAL_APP_ID'] ?? '';
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
-    OneSignal.initialize("beeac853-2ea3-4d6b-ab94-fcf0635c1cc1");
+    OneSignal.initialize(oneSignalAppId);
     OneSignal.Notifications.requestPermission(true);
     
     runApp(MultiProvider(

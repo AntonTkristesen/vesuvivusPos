@@ -16,6 +16,7 @@ dependencies:
   pusher_channels_flutter: ^2.5.0
   onesignal_flutter: ^5.1.0
   firebase_core: ^2.25.4
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
