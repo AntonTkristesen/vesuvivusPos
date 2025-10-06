@@ -46,7 +46,6 @@ void main() async {
             Provider<OrderRepository>(create: (_) => OrderRepository(apiClient)),
             Provider<ReceiptRepository>(create: (_) => ReceiptRepository(apiClient)),
             
-            // AuthViewModel must come before PosViewModel
             ChangeNotifierProvider<AuthViewModel>(
                 create: (ctx) => AuthViewModel(ctx.read<AuthRepository>(), ctx.read<OrderRepository>())),
             ChangeNotifierProvider<HomeViewModel>(
@@ -55,8 +54,7 @@ void main() async {
             ChangeNotifierProvider<ReceiptViewModel>(
                 create: (ctx) => ReceiptViewModel(ctx.read<ReceiptRepository>()),
             ),
-            
-            // Global PosViewModel with access to AuthViewModel
+
             ChangeNotifierProvider<PosViewModel>(
                 create: (ctx) => PosViewModel(
                     ctx.read<MenuRepository>(),

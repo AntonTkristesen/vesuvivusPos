@@ -48,11 +48,32 @@ class PosViewModel extends ChangeNotifier {
     }
 
     double get total =>
-        order?.items.fold(0.0, (sum, it) => sum! + (it.price * it.quantity)) ?? 0.0;
+        authViewModel.currentUser?.orders?.firstWhere((o) => o.id == order?.id).items.fold(0.0, (sum, it) => sum! + (it.price * it.quantity)) ?? 0.0;
 
     Future<void> markPaid() async {
         if (order == null) return;
         await _orders.setOrderStatus(order!.id, 'paid');
         authViewModel.updateOrder(order!);
+    }
+
+    Map<String, List<MenuItemModel>> organizeItemsByCategory(List<MenuItemModel> items) {
+        final Map<String, List<MenuItemModel>> groups = {};
+        for (final item in items) {
+            if (item.isAvailable) {
+                groups.putIfAbsent(item.category, () => []).add(item);
+            }
+        }
+        return groups;
+    }
+
+    String mapCategoryName(String category) {
+        switch (category.toLowerCase()) {
+            case 'drink':
+                return 'Drikke';
+            case 'food':
+                return 'Mad';
+            default:
+                return category;
+        }
     }
 }
